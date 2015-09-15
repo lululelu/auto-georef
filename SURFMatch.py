@@ -1,4 +1,4 @@
-# matching features of two images using a combination of surf detector, brief descriptor, and brute force matcher
+# matching features of two images using a combination of surf detector-descriptor, and brute force matcher
 import cv2
 import scipy as sp
 import numpy as np

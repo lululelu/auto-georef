@@ -1,3 +1,4 @@
+#solves for SURF det-des, uses FLANN Matcher, solves for Homography
 import cv2
 import scipy as sp
 import numpy as np
