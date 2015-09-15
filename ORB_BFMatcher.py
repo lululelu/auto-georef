@@ -1,4 +1,4 @@
-#This code extracts keypoins through ORB detector and descriptor and uses the brute-force matching algorithm.
+#This code extracts keypoints through ORB detector and descriptor and uses the brute-force matching algorithm.
 
 import cv2
 import numpy as np

@@ -1,4 +1,4 @@
-#This code detects and computes descriptors in an image using the SURF algorithm
+#detects and computes descriptors in an image using the SURF algorithm
 
 import cv2
 import numpy as np

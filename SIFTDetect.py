@@ -1,3 +1,4 @@
+#detects and computes descriptors in an image using the SIFT algorithm
 import cv2
 import numpy as np
 

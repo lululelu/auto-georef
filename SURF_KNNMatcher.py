@@ -1,5 +1,4 @@
-#This code extracts the keypoints using SURF detector and descriptor, 
-#FLANN (nearest-neighbor) matching algorithm
+#This code extracts the keypoints using SURF detector and descriptor, FLANN (nearest-neighbor) matching algorithm
 
 import cv2
 import numpy
