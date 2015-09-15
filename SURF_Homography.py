@@ -56,10 +56,13 @@ if len(good)>MIN_MATCH_COUNT:    #if enough matches are found, extract locations
     M, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC,5.0)
     matchesMask = mask.ravel().tolist()
 
+
+
+		
+		
+		
+	
 print 'Good matches:', len(good)
-
-
-
 
 h1, w1 = img1.shape[:2]
 h2, w2 = img2.shape[:2]
@@ -75,8 +78,12 @@ for m in good:
     color = tuple([sp.random.randint(0, 255) for _ in xrange(3)])
     cv2.line(view, (int(k1[m.queryIdx].pt[0]), int(k1[m.queryIdx].pt[1])) , (int(k2[m.trainIdx].pt[0] + w1), int(k2[m.trainIdx].pt[1])), color)
 print("---%s seconds---"% (time.time() - start_time))
-cv2.imshow("SURF", view)
-cv2.waitKey(0)
-cv2.destroyAllWindows ()
+
+
+
+
+
+
+
     
 

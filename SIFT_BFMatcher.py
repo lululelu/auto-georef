@@ -6,10 +6,8 @@ import time
 
 start_time = time.time()
 
-
-
-img1_path = 'C:\Users\EnviSAGE ResLab\Desktop\DPAD\Test Images\up.jpg'
-img2_path = 'C:\Users\EnviSAGE ResLab\Desktop\DPAD\Test Images\qcc.jpg'
+img1_path = 'C:\Users\EnviSAGE ResLab\Desktop\DPAD\Working Codes\incheon.rising.310.jpg'
+img2_path = 'C:\Users\EnviSAGE ResLab\Desktop\DPAD\Working Codes\incheon.here.crop.jpg'
 
 img1 = cv2.imread(img1_path, cv2.CV_LOAD_IMAGE_GRAYSCALE)
 img2 = cv2.imread(img2_path, cv2.CV_LOAD_IMAGE_GRAYSCALE)
@@ -37,7 +35,7 @@ print 'distance: mean: %.3f' % (sum(dist) / len(dist))
 print 'distance: max: %.3f' % max(dist)
 
 # threshold: half the mean
-thres_dist =(sum(dist) / len(dist)) * 0.30
+thres_dist =(sum(dist) / len(dist)) *0.50
 
 print '#threshold distance:', thres_dist
 

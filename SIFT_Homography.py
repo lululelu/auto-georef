@@ -10,8 +10,8 @@ print 'SIFT + FlannMatcher + Homography'
 MIN_MATCH_COUNT = 10 #set a condition that atleast 10 matches are to be found in the object
 print 'Minimum match count:', MIN_MATCH_COUNT
 
-qcc = cv2.imread('C:\Users\EnviSAGE ResLab\Desktop\DPAD\Test Images\qcc.jpg') # queryImage
-up = cv2.imread('C:\Users\EnviSAGE ResLab\Desktop\DPAD\Test Images\up.jpg') # trainImage
+qcc = cv2.imread('C:\Users\EnviSAGE ResLab\Desktop\DPAD\Working Codes\incheon.rising.310.jpg') # queryImage
+up = cv2.imread('C:\Users\EnviSAGE ResLab\Desktop\DPAD\Working Codes\incheon.here.crop.jpg') # trainImage
 
 #convert color images to gray
 img1 = cv2.cvtColor(qcc, cv2.COLOR_BGR2GRAY)
@@ -47,7 +47,7 @@ print 'Matches:', len(matches	)
 good = []
 
 for m,n in matches:
-    if m.distance < 0.1*n.distance:
+    if m.distance < n.distance:
         good.append(m)
 		
 if len(good)>MIN_MATCH_COUNT:    #if enough matches are found, extract locations of matched keypoints
@@ -56,6 +56,7 @@ if len(good)>MIN_MATCH_COUNT:    #if enough matches are found, extract locations
 
     M, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC,5.0)
     matchesMask = mask.ravel().tolist()
+	
 
 print 'Good matches:', len(good)
 
@@ -75,8 +76,9 @@ for m in good:
     color = tuple([sp.random.randint(0, 255) for _ in xrange(3)])
     cv2.line(view, (int(k1[m.queryIdx].pt[0]), int(k1[m.queryIdx].pt[1])) , (int(k2[m.trainIdx].pt[0] + w1), int(k2[m.trainIdx].pt[1])), color)
 print("---%s seconds---"% (time.time() - start_time))
+
 cv2.imshow("SIFT", view)
-cv2.waitKey(0)
-cv2.destroyAllWindows ()
+cv2.waitKey(100)
+
     
 
