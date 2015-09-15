@@ -1,4 +1,4 @@
-# matching features of two images using a combination of surf detector, brief descriptor, and brute force matcher
+# matching features of two images using a combination of surf detector - descriptor and brute force matcher
 import cv2
 import scipy as sp
 import numpy as np
@@ -78,17 +78,25 @@ for mat in sel_matches:
         # radius 4
         # colour blue
         # thickness = 1s
-        cv2.circle(view, (int(x1),int(y1)), 5, (255, 0, 0), 1)   
-        cv2.circle(view, (int(x2)+cols1,int(y2)), 5, (255, 0, 0), 1)
+        cv2.circle(view, (int(x1),int(y1)), 1, (255, 0, 0), 2)   
+        cv2.circle(view, (int(x2)+cols1,int(y2)), 1, (255, 0, 0), 2)
 		#allow values of src_pts and dst_pts to take values from 1-->10 for annotation
 		#s = np.range((int(k1[m.queryIdx].pt[0]), int(k1[m.queryIdx].pt[1]))
         #cv2.putText(view, '1', src_pts[0,:], cv2.FONT_HERSHEY_SIMPLEX,1,2)	
 	#annotate points for source image
 	N = len(sel_matches)
 	s = np.array(src_pts)
+	d = np.array(dst_pts)
+	d.shape = (10,2)
 	s.shape = (10,2)
 	labels = ['{0}'.format(i) for i in range(N)]
-	plt.subplots_adjust(bottom = 0.4)
+	for label, x, y in zip(labels, s[:, 0], s[:, 1]):
+		cv2.putText(view,label, (x,y),cv2.FONT_HERSHEY_TRIPLEX, 0.5, (1,0,0)) #Draw the text
+	for label, x, y in zip(labels, (d[:, 0] +cols1), d[:, 1]):
+		cv2.putText(view,label, (x,y),cv2.FONT_HERSHEY_TRIPLEX, 0.5, (1,0,0)) #Draw the text
+		
+	'''
+	plt.subplots_adjust(bottom = 0)
 	for label, x, y in zip(labels, s[:, 0], s[:, 1]):
 		plt.annotate(
 			label, 
@@ -96,11 +104,7 @@ for mat in sel_matches:
 			textcoords = 'offset points', ha = 'right', va = 'bottom',
 			#bbox = dict(boxstyle = 'round4,pad=0.5', fc = 'cyan', alpha = 0.5),
 			arrowprops = dict(arrowstyle = '->', connectionstyle = 'arc3,rad=0'))
-	#annotate points for destination image
-	d = np.array(dst_pts)
-	d.shape = (10,2)
-	labels = ['{0}'.format(i) for i in range(N)]
-	plt.subplots_adjust(bottom = 0.4)
+	plt.subplots_adjust(bottom = 0)
 	for label, x, y in zip(labels, (d[:, 0] +cols1), d[:, 1]):
 		plt.annotate(
 			label, 
@@ -108,20 +112,10 @@ for mat in sel_matches:
 			textcoords = 'offset points', ha = 'right', va = 'bottom',
 			#bbox = dict(boxstyle = 'round4,pad=0.5', fc = 'cyan', alpha = 0.5),
 			arrowprops = dict(arrowstyle = '->', connectionstyle = 'arc3,rad=0'))	
-        # Draw a line in between the two points
-        # thickness = 1
-        # colour blue
-        #cv2.line(view, (int(x1),int(y1)), (int(x2)+cols1,int(y2)), (255, 0, 0), 1)
-		
-		#s = np.range((int(k1[m.queryIdx].pt[0]), int(k1[m.queryIdx].pt[1]))
-		#d = np.range((int(k2[m.trainIdx].pt[0] + w1), int(k2[m.trainIdx].pt[1]))
-
-#font = cv2.FONT_HERSHEY_SIMPLEX 
-#cv2.putText(view, '2', (108, 101), font , 1, (255,0,0), 2)
-#cv2.putText(view, '3', (488, 315), font , 1, (255,0,0), 2)
-
-
+              #cv2.line(view, (int(x1),int(y1)), (int(x2)+cols1,int(y2)), (255, 0, 0), 1)
+    '''
+	
 cv2.imshow("Matched", view)
-plt.imshow(view)
-plt.show (0)
+#plt.imshow(view)
+#plt.show (0)
 cv2.waitKey(1000)
