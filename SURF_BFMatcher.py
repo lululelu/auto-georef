@@ -96,6 +96,7 @@ for mat in sel_matches:
 		cv2.putText(view,label, (x,y),cv2.FONT_HERSHEY_TRIPLEX, 0.5, (1,0,0)) #Draw the text
 		
 	'''
+	showing image using plt:
 	plt.subplots_adjust(bottom = 0)
 	for label, x, y in zip(labels, s[:, 0], s[:, 1]):
 		plt.annotate(
