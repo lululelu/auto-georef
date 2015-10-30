@@ -12,9 +12,12 @@ MIN_MATCH_COUNT = 10 #set a condition that atleast 10 MATCHES are to be found in
 img1_path = 'C:\Users\EnviSAGE ResLab\Desktop\DPAD\Programming\Test Images\TestImages\up.google.jpg'
 img2_path = 'C:\Users\EnviSAGE ResLab\Desktop\DPAD\Programming\Test Images\TestImages\up.here.jpg'
 
-img1 = cv2.imread(img1_path, 0)
-img2 = cv2.imread(img2_path, 0)
+img1_c = cv2.imread(img1_path) #read color image 1
+img2_c = cv2.imread(img2_path) #read color image 2
  
+img1 = cv2.cvtColor(img1_path, cv2.COLOR_BGR2GRAY) # convert to gray level
+img2 = cv2.cvtColor(img2_path, cv2.COLOR_BGR2GRAY)
+
 # Initiate SURF detector
 surf = cv2.SURF(5000)
 

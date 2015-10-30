@@ -10,16 +10,17 @@ start_time = time.time()
 img1_path = 'C:\Users\EnviSAGE ResLab\Desktop\DPAD\Programming\Test Images\TestImages\up.google.jpg'
 img2_path = 'C:\Users\EnviSAGE ResLab\Desktop\DPAD\Programming\Test Images\TestImages\up.here.jpg'
 
-img1 = cv2.imread(img1_path)
-img2 = cv2. imread(img2_path)
+img1_c = cv2.imread(img1_path)
+img2_c = cv2.imread(img2_path)
 
-img1_g = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
-img2_g = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
+img1 = cv2.cvtColor(img1_path, cv2.COLOR_BGR2GRAY)
+img2 = cv2.cvtColor(img2_path, cv2.COLOR_BGR2GRAY)
 
+# Initiate SURF detector
 surf = cv2.SURF (10000)   #keypoint detector and descriptor
 bf = cv2.BFMatcher()   # keypoint matcher
 
-# detect keypoints
+# detect keypoints and compute descriptors using SURF
 k1, d1  = surf.detectAndCompute(img1, None)
 k2, d2  = surf.detectAndCompute(img2, None)
 
