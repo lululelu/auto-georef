@@ -91,7 +91,9 @@ for mat in good:
         # thickness = 1s
         cv2.circle(view, (int(x1),int(y1)), 1, (255, 0, 0), 2)   
         cv2.circle(view, (int(x2)+cols1,int(y2)), 1, (255, 0, 0), 2)
-		
+		#draw line connecting the matching keypoints
+		#cv2.line(view, (int(x1),int(y1)), (int(x2)+cols1,int(y2)), (255, 0, 0), 1)
+	
 	#annotate points for source image
 	N = len(good)
 	s = np.array(src_pts)
@@ -99,14 +101,9 @@ for mat in good:
 	d.shape = (N,2)
 	s.shape = (N,2)
 	labels = ['{0}'.format(i) for i in range(N)]
-	'''
-	for label, x, y in zip(labels, s[:, 0], s[:, 1]):
-		cv2.putText(view,label, (x,y),cv2.FONT_HERSHEY_TRIPLEX, 0.5, (1,0,0)) #Draw the text
-	for label, x, y in zip(labels, (d[:, 0] +cols1), d[:, 1]):
-		cv2.putText(view,label, (x,y),cv2.FONT_HERSHEY_TRIPLEX, 0.5, (1,0,0)) #Draw the text
-		
-	'''
+	
 	#showing image using plt:
+		#plot image 1 with labels
 	plt.subplots_adjust(bottom = 0)
 	for label, x, y in zip(labels, s[:, 0], s[:, 1]):
 		plt.annotate(
@@ -115,6 +112,7 @@ for mat in good:
 			textcoords = 'offset points', ha = 'right', va = 'bottom',
 			#bbox = dict(boxstyle = 'round4,pad=0.5', fc = 'cyan', alpha = 0.5),
 			arrowprops = dict(arrowstyle = '->', connectionstyle = 'arc3,rad=0'))
+		#plot image 2 with labels
 	plt.subplots_adjust(bottom = 0)
 	for label, x, y in zip(labels, (d[:, 0] +cols1), d[:, 1]):
 		plt.annotate(
@@ -123,7 +121,7 @@ for mat in good:
 			textcoords = 'offset points', ha = 'right', va = 'bottom',
 			#bbox = dict(boxstyle = 'round4,pad=0.5', fc = 'cyan', alpha = 0.5),
 			arrowprops = dict(arrowstyle = '->', connectionstyle = 'arc3,rad=0'))	
-              #cv2.line(view, (int(x1),int(y1)), (int(x2)+cols1,int(y2)), (255, 0, 0), 1)
+        
     
 
 
