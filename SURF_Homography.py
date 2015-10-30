@@ -7,20 +7,16 @@ import time
 
 start_time = time.time()
 
+MIN_MATCH_COUNT = 10 #set a condition that atleast 10 MATCHES are to be found in the object
 
+img1_path = 'C:\Users\EnviSAGE ResLab\Desktop\DPAD\Programming\Test Images\TestImages\up.google.jpg'
+img2_path = 'C:\Users\EnviSAGE ResLab\Desktop\DPAD\Programming\Test Images\TestImages\up.here.jpg'
 
-MIN_MATCH_COUNT = 10 #set a condition that atleast 10 matches are to be found in the object
-
-
-first = cv2.imread('C:\Users\EnviSAGE ResLab\Desktop\DPAD\Programming\Working Codes\ht01.jpg') # trainImage
-second = cv2.imread('C:\Users\EnviSAGE ResLab\Desktop\DPAD\Programming\Working Codes\ht02.jpg') # queryImage
-
-#convert color images to gray
-img1 = cv2.cvtColor(first, cv2.COLOR_BGR2GRAY)
-img2 = cv2.cvtColor(second, cv2.COLOR_BGR2GRAY)
+img1 = cv2.imread(img1_path, 0)
+img2 = cv2.imread(img2_path, 0)
  
 # Initiate SURF detector
-surf = cv2.SURF()
+surf = cv2.SURF(5000)
 
 # detect keypoints and compute descriptors using SURF
 k1, des1 = surf.detectAndCompute(img1,None)
@@ -46,7 +42,7 @@ matches = flann.knnMatch(des1,des2,k=2)
 good = []
 
 for m,n in matches:
-    if m.distance < 0.2377*n.distance:
+    if m.distance < 0.8*n.distance:
         good.append(m)
 		
 if len(good)>MIN_MATCH_COUNT:    #if enough matches are found, extract locations of matched keypoints
@@ -56,7 +52,6 @@ if len(good)>MIN_MATCH_COUNT:    #if enough matches are found, extract locations
     M, mask = cv2.findHomography(dst_pts, src_pts, cv2.RANSAC,5.0)
     matchesMask = mask.ravel().tolist() 
 
-
 else:
 	print "not enough matches are found - %d%d" %(len(good), MIN_MATCH_COUNT)
 	matchesMask = None
@@ -65,10 +60,10 @@ rows, cols = img1.shape
 pts2 = M
 pts1 = np.float32([ [0,0], [0, rows-1], [cols-1, rows-1], [cols-1,0] ]).reshape(-1,1,2) #where the points will be warped
 d = cv2.perspectiveTransform(pts1,pts2)
+#out = cv2.polylines(img2, [np.int32(d)], True,255,3)
+warp = cv2.warpPerspective(img2,M,(cols,rows))	#warp Image 2 to Image 1 coordinates
 
-out = cv2.polylines(img2, [np.int32(d)], True,255,3)
-warp = cv2.warpPerspective(img2,M,(1200,900))	#warp Image 2 to Image 1 coordinates
-
+#visualizations
 h1, w1 = img1.shape[:2]
 h2, w2 = img2.shape[:2]
 view = sp.zeros((max(h1, h2), w1 + w2, 3), sp.uint8)
@@ -76,12 +71,61 @@ view[:h1, :w1, 0] = img1
 view[:h2, w1:, 0] = img2
 view[:, :, 1] = view[:, :, 0]
 view[:, :, 2] = view[:, :, 0]
+
+cols1 = img1.shape[1]
+cols2 = img2.shape[1]
  
-for m in good:
-    # draw the keypoints
-    # print m.queryIdx, m.trainIdx, m.distance
-    color = tuple([sp.random.randint(0, 255) for _ in xrange(3)])
-    cv2.line(view, (int(k1[m.queryIdx].pt[0]), int(k1[m.queryIdx].pt[1])) , (int(k2[m.trainIdx].pt[0] + w1), int(k2[m.trainIdx].pt[1])), color)
+for mat in good:
+# Get the matching keypoints for each of the images
+        img1_idx = mat.queryIdx
+        img2_idx = mat.trainIdx
+
+        # x - columns
+        # y - rows
+        (x1,y1) = k1[img1_idx].pt
+        (x2,y2) = k2[img2_idx].pt
+
+        # Draw a small circle at both co-ordinates
+        # radius 4
+        # colour blue
+        # thickness = 1s
+        cv2.circle(view, (int(x1),int(y1)), 1, (255, 0, 0), 2)   
+        cv2.circle(view, (int(x2)+cols1,int(y2)), 1, (255, 0, 0), 2)
+		
+	#annotate points for source image
+	N = len(good)
+	s = np.array(src_pts)
+	d = np.array(dst_pts)
+	d.shape = (N,2)
+	s.shape = (N,2)
+	labels = ['{0}'.format(i) for i in range(N)]
+	'''
+	for label, x, y in zip(labels, s[:, 0], s[:, 1]):
+		cv2.putText(view,label, (x,y),cv2.FONT_HERSHEY_TRIPLEX, 0.5, (1,0,0)) #Draw the text
+	for label, x, y in zip(labels, (d[:, 0] +cols1), d[:, 1]):
+		cv2.putText(view,label, (x,y),cv2.FONT_HERSHEY_TRIPLEX, 0.5, (1,0,0)) #Draw the text
+		
+	'''
+	#showing image using plt:
+	plt.subplots_adjust(bottom = 0)
+	for label, x, y in zip(labels, s[:, 0], s[:, 1]):
+		plt.annotate(
+			label, 
+			xy = (x, y), xytext = (-10, 10),
+			textcoords = 'offset points', ha = 'right', va = 'bottom',
+			#bbox = dict(boxstyle = 'round4,pad=0.5', fc = 'cyan', alpha = 0.5),
+			arrowprops = dict(arrowstyle = '->', connectionstyle = 'arc3,rad=0'))
+	plt.subplots_adjust(bottom = 0)
+	for label, x, y in zip(labels, (d[:, 0] +cols1), d[:, 1]):
+		plt.annotate(
+			label, 
+			xy = (x, y), xytext = (-10, 10),
+			textcoords = 'offset points', ha = 'right', va = 'bottom',
+			#bbox = dict(boxstyle = 'round4,pad=0.5', fc = 'cyan', alpha = 0.5),
+			arrowprops = dict(arrowstyle = '->', connectionstyle = 'arc3,rad=0'))	
+              #cv2.line(view, (int(x1),int(y1)), (int(x2)+cols1,int(y2)), (255, 0, 0), 1)
+    
+
 
 print 'SURF + FlannMatcher + Homography'
 print 'Minimum match count:', MIN_MATCH_COUNT
@@ -91,14 +135,14 @@ print 'Good matches:', len(good)
 print("---%s seconds---"% (time.time() - start_time))
 
 
-cv2.imshow("Original", img1)
+cv2.imshow("Matches", view)
 cv2.imshow("Img2 warped", warp)
 cv2.waitKey(1000)
 #cv2.imshow("out", out)
 #cv2.imshow("Homography", view)
 #cv2.waitKey(1000)
-#plt.imshow(view)
-#plt.show (0)
+plt.imshow(view)
+plt.show (1000)
 
 
 
