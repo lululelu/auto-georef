@@ -1,4 +1,4 @@
-#solves for SURF det-des, uses FLANN Matcher, solves for Homography
+#solves for SURF det-des, uses FLANN Matcher, solves for Homography (Perspective Transform of the slave image)
 import cv2
 import scipy as sp
 import numpy as np
