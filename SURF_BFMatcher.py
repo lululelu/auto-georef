@@ -13,8 +13,8 @@ img2_path = 'C:\Users\EnviSAGE ResLab\Desktop\DPAD\Programming\Test Images\TestI
 img1_c = cv2.imread(img1_path)
 img2_c = cv2.imread(img2_path)
 
-img1 = cv2.cvtColor(img1_path, cv2.COLOR_BGR2GRAY)
-img2 = cv2.cvtColor(img2_path, cv2.COLOR_BGR2GRAY)
+img1 = cv2.cvtColor(img1_c, cv2.COLOR_BGR2GRAY)
+img2 = cv2.cvtColor(img2_c, cv2.COLOR_BGR2GRAY)
 
 # Initiate SURF detector
 surf = cv2.SURF (10000)   #keypoint detector and descriptor
