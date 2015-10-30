@@ -40,6 +40,7 @@ good = [m for m in matches if m.distance < thres_dist]
 src_pts = np.float32([ k1[m.queryIdx].pt for m in good ]).reshape(-1,1,2) #src plane : img1 
 dst_pts = np.float32([ k2[m.trainIdx].pt for m in good]).reshape(-1,1,2)  #dst plane : img2
 
+# Solve for the perspective transform of the slave image
 M, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC,5.0)
 matchesMask = mask.ravel().tolist() 
 
@@ -48,7 +49,7 @@ cols = img1.shape[1]
 pts2 = M
 pts1 = np.float32([ [0,0], [0, rows-1], [cols-1, rows-1], [cols-1,0] ]).reshape(-1,1,2) #where the points will be warped
 d = cv2.perspectiveTransform(pts1,pts2)
-out = cv2.polylines(img2, [np.int32(d)], True,255,3)
+#out = cv2.polylines(img2, [np.int32(d)], True,255,3)
 warp = cv2.warpPerspective(img2,M,(cols,rows))	#warp Image 2 to Image 1 coordinates
 
 #visualizations
