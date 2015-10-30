@@ -15,8 +15,8 @@ img2_path = 'C:\Users\EnviSAGE ResLab\Desktop\DPAD\Programming\Test Images\TestI
 img1_c = cv2.imread(img1_path) #read color image 1
 img2_c = cv2.imread(img2_path) #read color image 2
  
-img1 = cv2.cvtColor(img1_path, cv2.COLOR_BGR2GRAY) # convert to gray level
-img2 = cv2.cvtColor(img2_path, cv2.COLOR_BGR2GRAY)
+img1 = cv2.cvtColor(img1_c, cv2.COLOR_BGR2GRAY) # convert to gray level
+img2 = cv2.cvtColor(img2_c, cv2.COLOR_BGR2GRAY)
 
 # Initiate SURF detector
 surf = cv2.SURF(5000)
@@ -65,6 +65,7 @@ pts1 = np.float32([ [0,0], [0, rows-1], [cols-1, rows-1], [cols-1,0] ]).reshape(
 d = cv2.perspectiveTransform(pts1,pts2)
 #out = cv2.polylines(img2, [np.int32(d)], True,255,3)
 warp = cv2.warpPerspective(img2,M,(cols,rows))	#warp Image 2 to Image 1 coordinates
+
 
 #visualizations
 h1, w1 = img1.shape[:2]
@@ -126,8 +127,6 @@ for mat in good:
 			arrowprops = dict(arrowstyle = '->', connectionstyle = 'arc3,rad=0'))	
         
     
-
-
 print 'SURF + FlannMatcher + Homography'
 print 'Minimum match count:', MIN_MATCH_COUNT
 print 'Keypoints in image1: %d, image2: %d' % (len(k1), len(k2))	
@@ -136,9 +135,9 @@ print 'Good matches:', len(good)
 print("---%s seconds---"% (time.time() - start_time))
 
 
-cv2.imshow("Matches", view)
-cv2.imshow("Img2 warped", warp)
-cv2.waitKey(1000)
+#cv2.imshow("Matches", view)
+#cv2.imshow("Img2 warped", warp)
+#cv2.waitKey(1000)
 #cv2.imshow("out", out)
 #cv2.imshow("Homography", view)
 #cv2.waitKey(1000)

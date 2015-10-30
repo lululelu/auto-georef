@@ -115,8 +115,6 @@ for mat in good:
 			arrowprops = dict(arrowstyle = '->', connectionstyle = 'arc3,rad=0'))	
     
     
-
-
 print 'SURF + Brute Force Matcher'
 print 'Keypoints in image1: %d, image2: %d' % (len(k1), len(k2))	
 print 'Matches:', len(matches)
