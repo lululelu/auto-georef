@@ -8,13 +8,19 @@ import time
 start_time = time.time()
 
 img1_path = 'C:\Users\EnviSAGE ResLab\Desktop\DPAD\Programming\Test Images\TestImages\up.google.jpg'
-img2_path = 'C:\Users\EnviSAGE ResLab\Desktop\DPAD\Programming\Test Images\TestImages\up.here.jpg'
+img2_path = 'C:\Users\EnviSAGE ResLab\Desktop\DPAD\Programming\Test Images\TestImages\up.esri.jpg'
 
 img1_c = cv2.imread(img1_path)
 img2_c = cv2.imread(img2_path)
 
 img1 = cv2.cvtColor(img1_c, cv2.COLOR_BGR2GRAY)
 img2 = cv2.cvtColor(img2_c, cv2.COLOR_BGR2GRAY)
+
+ht1 = 1000   #hessianThreshold for img01
+ht2 = 1000  #hessianThreshold for img02
+
+sift1 = cv2.SIFT (ht1)
+sift2 = cv2.SIFT (ht2)
 
 # Initiate SURF detector
 surf = cv2.SURF (10000)   #keypoint detector and descriptor
