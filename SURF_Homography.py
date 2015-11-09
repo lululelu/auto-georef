@@ -7,23 +7,30 @@ import time
 
 start_time = time.time()
 
+print 'SURF + FlannMatcher + Homography'
+
 MIN_MATCH_COUNT = 10 #set a condition that atleast 10 MATCHES are to be found in the object
 
-img1_path = 'C:\Users\EnviSAGE ResLab\Desktop\DPAD\Programming\Test Images\TestImages\up.google.jpg'
-img2_path = 'C:\Users\EnviSAGE ResLab\Desktop\DPAD\Programming\Test Images\TestImages\up.here.jpg'
 
-img1_c = cv2.imread(img1_path) #read color image 1
-img2_c = cv2.imread(img2_path) #read color image 2
- 
-img1 = cv2.cvtColor(img1_c, cv2.COLOR_BGR2GRAY) # convert to gray level
+img1_path = 'C:\Users\EnviSAGE ResLab\Desktop\DPAD\Programming\Test Images\sample_images\im.esri17.jpg'
+img2_path = 'C:\Users\EnviSAGE ResLab\Desktop\Accuracy Tests Journ\Img2 warped.jpg'
+
+img1_c = cv2.imread(img1_path)
+img2_c = cv2.imread(img2_path)
+
+img1 = cv2.cvtColor(img1_c, cv2.COLOR_BGR2GRAY)
 img2 = cv2.cvtColor(img2_c, cv2.COLOR_BGR2GRAY)
 
-# Initiate SURF detector
-surf = cv2.SURF(5000)
+ht1 = 10000 #hessianThreshold for img01
+ht2 = 10000 #hessianThreshold for img02
+
+surf1 = cv2.SURF (ht1)
+surf2 = cv2.SURF (ht2)
 
 # detect keypoints and compute descriptors using SURF
-k1, des1 = surf.detectAndCompute(img1,None)
-k2, des2 = surf.detectAndCompute(img2,None)
+k1, d1  = surf1.detectAndCompute(img1, None)
+k2, d2  = surf2.detectAndCompute(img2, None)
+
 
 #Fast Library for Approximate Nearest Neighbors
 FLANN_INDEX_KDTREE = 0
@@ -39,15 +46,16 @@ search_params = dict(checks = 50)
 
 flann = cv2.FlannBasedMatcher(index_params, search_params)
 
-matches = flann.knnMatch(des1,des2,k=2)
+matches = flann.knnMatch(d1,d2,k=2)
 
 # store all the good matches as per Lowe's ratio test.  
 good = []
 
 for m,n in matches:
-    if m.distance < 0.8*n.distance:
+    if m.distance < 0.1*n.distance:
         good.append(m)
-		
+Lratio = m.distance/n.distance
+#print "Lowe's Ratio - %d" %(Lratio)
 if len(good)>MIN_MATCH_COUNT:    #if enough matches are found, extract locations of matched keypoints
     src_pts = np.float32([ k1[m.queryIdx].pt for m in good ]).reshape(-1,1,2)
     dst_pts = np.float32([ k2[m.trainIdx].pt for m in good ]).reshape(-1,1,2)
@@ -88,7 +96,6 @@ for mat in good:
         # y - rows
         (x1,y1) = k1[img1_idx].pt
         (x2,y2) = k2[img2_idx].pt
-
         # Draw a small circle at both co-ordinates
         # radius 4
         # colour blue
@@ -114,8 +121,8 @@ for mat in good:
 			label, 
 			xy = (x, y), xytext = (-10, 10),
 			textcoords = 'offset points', ha = 'right', va = 'bottom',
-			#bbox = dict(boxstyle = 'round4,pad=0.5', fc = 'cyan', alpha = 0.5),
-			arrowprops = dict(arrowstyle = '->', connectionstyle = 'arc3,rad=0'))
+			bbox = dict(boxstyle = 'round4,pad=0.5', fc = 'cyan', alpha = 0.5))#,
+			#arrowprops = dict(arrowstyle = '->', connectionstyle = 'arc3,rad=0'))
 		#plot image 2 with labels
 	plt.subplots_adjust(bottom = 0)
 	for label, x, y in zip(labels, (d[:, 0] +cols1), d[:, 1]):
@@ -123,30 +130,50 @@ for mat in good:
 			label, 
 			xy = (x, y), xytext = (-10, 10),
 			textcoords = 'offset points', ha = 'right', va = 'bottom',
-			#bbox = dict(boxstyle = 'round4,pad=0.5', fc = 'cyan', alpha = 0.5),
-			arrowprops = dict(arrowstyle = '->', connectionstyle = 'arc3,rad=0'))	
+			bbox = dict(boxstyle = 'round4,pad=0.5', fc = 'cyan', alpha = 0.5))#,
+			#arrowprops = dict(arrowstyle = '->', connectionstyle = 'arc3,rad=0'))	
         
     
+#Accuracy drafts: RMSE = (((xr-xi)^2 + (yr-yi)^2))^0.5
+
+dx = s[:,0] - d[:,0] #X Residual
+dy = s[:,1] - d[:,1] #Y Residual
+sqx = np.square([dx]) #square of X residual
+sqy = np.square([dy]) #square o Y residual
+sqs = sqx + sqy  #sum of squares
+sqr = np.sqrt([sqs]) #RMS 
+sqr2 = np.square(sqr)
+rx =abs(dx*sqr2)
+ry =abs(dy*sqr2)
+SQR =np.sqrt([rx + ry]) #RMS Error per GCP
+rxsum = np.sum([rx], dtype=np.float32)
+rysum = np.sum([ry], dtype=np.float32)
+Rx = np.sqrt([(1/N)*rxsum])
+Ry = np.sqrt([(1/N)*rysum])
+Rxs = np.square([Rx])
+Rys = np.square([Ry])
+T= np.sqrt([Rxs + Rys], dtype=np.float32) #Total RMS Error
+E = (1/T)*sqr
+
+
 print 'SURF + FlannMatcher + Homography'
 print 'Minimum match count:', MIN_MATCH_COUNT
 print 'Keypoints in image1: %d, image2: %d' % (len(k1), len(k2))	
 print 'Matches:', len(matches)
 print 'Good matches:', len(good)
-print("---%s seconds---"% (time.time() - start_time))
+print  " RMS Error:" , sqr
+print "RMS Error per GCP:", SQR
+print "Total RMS Error:" , T
+#print "Error Contribution by Point:", E
 
+print("---%s seconds---"% (time.time() - start_time))
 
 #cv2.imshow("Matches", view)
 #cv2.imshow("Img2 warped", warp)
-#cv2.waitKey(1000)
 #cv2.imshow("out", out)
 #cv2.imshow("Homography", view)
 #cv2.waitKey(1000)
-plt.imshow(view)
-plt.show (1000)
+#plt.imshow(view)
+#plt.show (10)
 
-
-
-
-
-    
-
+ 

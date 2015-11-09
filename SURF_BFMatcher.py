@@ -7,8 +7,8 @@ import time
 
 start_time = time.time()
 
-img1_path = 'C:\Users\EnviSAGE ResLab\Desktop\DPAD\Programming\Test Images\TestImages\up.google.jpg'
-img2_path = 'C:\Users\EnviSAGE ResLab\Desktop\DPAD\Programming\Test Images\TestImages\up.esri.jpg'
+img1_path = 'C:\Users\EnviSAGE ResLab\Desktop\DPAD\Programming\Working Codes\incheon.here.crop.jpg'
+img2_path = 'C:\Users\EnviSAGE ResLab\Desktop\DPAD\Programming\Working Codes\incheon.rising.310.jpg'
 
 img1_c = cv2.imread(img1_path)
 img2_c = cv2.imread(img2_path)
@@ -16,19 +16,18 @@ img2_c = cv2.imread(img2_path)
 img1 = cv2.cvtColor(img1_c, cv2.COLOR_BGR2GRAY)
 img2 = cv2.cvtColor(img2_c, cv2.COLOR_BGR2GRAY)
 
-ht1 = 1000   #hessianThreshold for img01
-ht2 = 1000  #hessianThreshold for img02
-
-sift1 = cv2.SIFT (ht1)
-sift2 = cv2.SIFT (ht2)
+ht1 = 500  #hessianThreshold for img01
+ht2 = 500  #hessianThreshold for img02
 
 # Initiate SURF detector
-surf = cv2.SURF (10000)   #keypoint detector and descriptor
+surf1 = cv2.SURF (ht1)
+surf2 = cv2.SURF (ht2)
+
 bf = cv2.BFMatcher()   # keypoint matcher
 
 # detect keypoints and compute descriptors using SURF
-k1, d1  = surf.detectAndCompute(img1, None)
-k2, d2  = surf.detectAndCompute(img2, None)
+k1, d1  = surf1.detectAndCompute(img1, None)
+k2, d2  = surf2.detectAndCompute(img2, None)
 
 # match the keypoints
 matches = bf.match(d1, d2)
@@ -37,7 +36,7 @@ matches = bf.match(d1, d2)
 dist = [m.distance for m in matches]
 
 # threshold (variable)
-thres_dist =(sum(dist) / len(dist)) 
+thres_dist =(sum(dist) / len(dist))*0.62
 
 # keep only the reasonable matches
 good = [m for m in matches if m.distance < thres_dist]
@@ -61,15 +60,15 @@ warp = cv2.warpPerspective(img2,M,(cols,rows))	#warp Image 2 to Image 1 coordina
 #visualizations
 h1, w1 = img1.shape[:2]
 h2, w2 = img2.shape[:2]
-view = sp.zeros((max(h1, h2), w1 + w2, 3), sp.uint8) #sp.zeros((heigth, width,3),3)
-view[:h1, :w1] = img1
-view[:h2, w1:] = img2
+view = sp.zeros((max(h1, h2), w1 + w2, 3), sp.uint8)
+view[:h1, :w1, 0] = img1
+view[:h2, w1:, 0] = img2
 view[:, :, 1] = view[:, :, 0]
 view[:, :, 2] = view[:, :, 0]
 
 cols1 = img1.shape[1]
 cols2 = img2.shape[1]
-
+ 
 # For each pair of points we have between both images
     # draw circles, then connect a line between them
 for mat in good:
@@ -108,7 +107,7 @@ for mat in good:
 			label, 
 			xy = (x, y), xytext = (-10, 10),
 			textcoords = 'offset points', ha = 'right', va = 'bottom',
-			#bbox = dict(boxstyle = 'round4,pad=0.5', fc = 'cyan', alpha = 0.5),
+			bbox = dict(boxstyle = 'round4,pad=0.5', fc = 'cyan', alpha = 0.5),
 			arrowprops = dict(arrowstyle = '->', connectionstyle = 'arc3,rad=0'))
 		#plot image 2 with labels
 	plt.subplots_adjust(bottom = 0)
@@ -117,7 +116,7 @@ for mat in good:
 			label, 
 			xy = (x, y), xytext = (-10, 10),
 			textcoords = 'offset points', ha = 'right', va = 'bottom',
-			#bbox = dict(boxstyle = 'round4,pad=0.5', fc = 'cyan', alpha = 0.5),
+			bbox = dict(boxstyle = 'round4,pad=0.5', fc = 'cyan', alpha = 0.5),
 			arrowprops = dict(arrowstyle = '->', connectionstyle = 'arc3,rad=0'))	
     
     
@@ -134,5 +133,5 @@ print("---%s seconds---"% (time.time() - start_time))
 #cv2.imshow("out", out) 
 #cv2.imshow("Homography", view)
 #cv2.waitKey(1000)
-plt.imshow(view)
-plt.show (1000)
+#plt.imshow(view)
+#plt.show (1000)
