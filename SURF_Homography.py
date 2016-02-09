@@ -79,6 +79,7 @@ warp = cv2.warpPerspective(img2,M,(cols,rows))	#warp Image 2 to Image 1 coordina
 h1, w1 = img1.shape[:2]
 h2, w2 = img2.shape[:2]
 view = sp.zeros((max(h1, h2), w1 + w2, 3), sp.uint8)
+
 view[:h1, :w1, 0] = img1
 view[:h2, w1:, 0] = img2
 view[:, :, 1] = view[:, :, 0]
@@ -154,17 +155,29 @@ Rxs = np.square([Rx])
 Rys = np.square([Ry])
 T= np.sqrt([Rxs + Rys], dtype=np.float32) #Total RMS Error
 E = (1/T)*sqr
-
+sqx.shape = (N,)
+sqy.shape = (N,)
+sqr.shape =(N,)
+SQR.shape = (N,)
 
 print 'SURF + FlannMatcher + Homography'
 print 'Minimum match count:', MIN_MATCH_COUNT
 print 'Keypoints in image1: %d, image2: %d' % (len(k1), len(k2))	
 print 'Matches:', len(matches)
 print 'Good matches:', len(good)
+print 'Input Coordinates:', s
 print  " RMS Error:" , sqr
 print "RMS Error per GCP:", SQR
 print "Total RMS Error:" , T
 #print "Error Contribution by Point:", E
+
+x  = np.arange(N)
+x.shape = (N,1)
+y  = np.array([SQR])
+y.shape = (N,1)
+plt.plot(x,y, 'go', figsize = (10,10))
+plt.axis ([0,13,0,0.01])
+
 
 print("---%s seconds---"% (time.time() - start_time))
 
@@ -174,6 +187,6 @@ print("---%s seconds---"% (time.time() - start_time))
 #cv2.imshow("Homography", view)
 #cv2.waitKey(1000)
 #plt.imshow(view)
-#plt.show (10)
+plt.show (1000)
 
  
