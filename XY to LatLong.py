@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from osgeo import gdal
 from osgeo import osr
 from PIL import Image
-#from tabulate import tablate as tab
+from tabulate import tabulate as tab
 import time
 
 start_time = time.time()
@@ -128,7 +128,7 @@ for mat in sel_matches:
 ds = gdal.Open(img1_path)
 
 #unravel GDAL affine transform parameters
-c, a , b, f,d ,e = ds.GetGeoTransform()
+c, a , b, f,D ,e = ds.GetGeoTransform()
 
 #def pixel2coord(col,row):
 x_value = s[:,1]
@@ -136,19 +136,18 @@ y_value = s[:,0]
 
 """Returns global coordintes to pixel center using base-0 raster index"""
 xp = a*x_value + b*y_value + a*0.5 + b *0.5 + c
-yp = d*x_value + e*y_value + d*0.5 + e *0.5 + f
+yp = D*x_value + e*y_value + D*0.5 + e *0.5 + f
 
 
 xp.shape =(N,1)
 yp.shape = (N,1)
 
 final_coord = np.hstack((xp,yp))
-
 pixel_coord = np.hstack((src_pts,dst_pts))
 
 #converting jpg to tif
-#img = Image.open('H:\Fully Georef (GCP)\Butuan.Slave.jpg')
-#img.save('H:\Fully Georef (GCP)\Butuan.Slave.tiff')
+img = Image.open('H:\Fully Georef (GCP)\Butuan.Slave.jpg')
+img.save('H:\Fully Georef (GCP)\Butuan.Slave.tiff')
 
 #transform slave image coordinates to world coordinates
 fn = r'H:\Fully Georef (GCP)\Butuan.Slave.tiff'
@@ -174,15 +173,15 @@ gdal.GCP( 125.55802917, 8.96727371, 0, 188,130)]
 #unravel GDAL affine transform parameters
 img3_path = "H:\Fully Georef (GCP)\Butuan.Slave01.tiff"
 ds3 = gdal.Open(img3_path)
-c, a , b, f,d ,e = ds3.GetGeoTransform()
+C,A , B, F,D2 ,E = ds3.GetGeoTransform()
 
 #def pixel2coord(col,row):
-x2_value = dst_pts[0,:]
-y2_value = dst_pts[1,:]
+x2_value = d[:,1]
+y2_value = d[:,0]
 
 """Returns global coordintes to pixel center using base-0 raster index"""
-xpd = a*x_value + b*y_value + a*0.5 + b *0.5 + c
-ypd = d*x_value + e*y_value + d*0.5 + e *0.5 + f
+xpd = A*x2_value + B*y2_value + A*0.6 + B *0.6 + C
+ypd = D2*x2_value + E*y2_value + D2*0.6 + E *0.6 + F
 
 xpd.shape =(N,1)
 ypd.shape = (N,1)
@@ -190,28 +189,31 @@ ypd.shape = (N,1)
 final_coord_d = np.hstack((xpd,ypd))
 
 rmse_per_gcp = np.sqrt(np.square(final_coord_d[:,0] - final_coord[:,0])) + np.square(final_coord_d[:,1] - final_coord[:,1])
-
-
+rpg = np.array (rmse_per_gcp, np.float32)
+rpg.shape = (N,1)
 #rmse_per_gcp_x.shape = (N,1)
 #rmse_per_gcp_y.shape = (N,1)
 
 #total_rmse_per_gcp = np.hstack((rmse_per_gcp_x, rmse_per_gcp_y))
 gcp = np.arange(0, N, 1)
 
-
+table = [[xp,yp]]
+headers = ["Lat", "Lon"]
+headers2 = ["Master", "Slave"]
+headers3 = ["X", "Y"]
+headers4 =  ["RMSE per GCP"]
+table2 = [gcp[:], xpd[:],ypd[:]]
 plt.plot(gcp,rmse_per_gcp, 'go')
-plt.axis([-0.5, 13, -0.01, 0.05])
+plt.axis([0, 13, 0.0, 0.05])
 plt.ylabel ("RMSE")
 plt.xlabel ("GCP No.")
-plt.title("RMSE per GCP")
+plt.title("RMSE per GCP (deg)")
 plt.grid(True)
 plt.plot(figsize=(5,5))
 
 #table = [[rmse_per_gcp_x]]
 #print tab(table)
-
 #print img1.shape
-
 #print img1.size
 #print img2.size
 #print "col:", col
@@ -219,21 +221,24 @@ plt.plot(figsize=(5,5))
 #print "Lat:", xp
 #print "Lon:", yp
 
-print "Master Global Coord:", final_coord
-print "Slave Global Coord:", final_coord_d
-print "Master KPs Coord", pixel_coord
-print "Slave KPs Coord:", dst_pts
+#print "Master Global Coord:", final_coord
+#print "Slave Global Coord:", final_coord_d
+#print "Master KPs Coord", pixel_coord
+#print "Slave KPs Coord:", dst_pts
 #print "Image 1 Size:", img1.shape
 #print "Image 2 Size:", img2.shape
 #print "RMSE per GCP Northing:", rmse_per_gcp_x
 #print "RMSE per GCP Easting:", rmse_per_gcp_y
-print "RMSE per GCP:", rmse_per_gcp
+#print "RMSE per GCP:", rmse_per_gcp
 #cv2.imshow("Matched", view)
 #plt.imshow(view) 
-
+print tab(final_coord, headers,numalign="right")
+print tab(final_coord_d, headers,numalign="right")
+print tab(rpg)
+print tab(src_pts)
 #plt.plot (gcp, rmse_per_gcp_x, "bs")
 #plt.plot (gcp, rmse_per_gcp_y, "ro")
-plt.show (10000)
+#plt.show (10000)
 #cv2.waitKey(1000)
 
 
