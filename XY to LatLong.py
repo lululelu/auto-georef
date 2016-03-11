@@ -1,3 +1,26 @@
+
+###############################################################################
+# Project:  Automatic Georeferencing of DWIATA Imagery
+# Purpose:  Script to automatically extract and match feautres between images, 
+#           read coordinate system and geotransformation matrix of the master image
+#           and report latitude/longitude coordinates of the keypoints, 
+#           update the geotransformation of slave images
+# Author:   Jerine A. Amado
+#           PHL-Microsat DPAD
+# References: 
+# [1] "Lowe, David G.","Distinctive Image Features from Scale-Invariant Keypoints",
+#     "International Journal of Computer Vision", 60(2) 91-110.
+# [2] "Bay, Herbert,  Ess, Andreasa, Tuytelaars, Tinne, and Van Gool, Luc"","Speede-Up Robust
+#      Features, Computer Vision and Image Understanding"", 110 (2008) 346–359
+# [3] "Garrard, Chris", "Manning Early Access Program Geoprocessing with Python 
+#      Copyright 2015 Manning Publications", (2015).
+# [4] ÖpenCV-Python Tutorials", http://opencv-python-tutroals.readthedocs.org
+# 
+#
+###############################################################################
+
+
+
 # matching features of two images using a combination of surf detector - descriptor and brute force matcher
 import cv2
 import scipy as sp
@@ -128,6 +151,7 @@ for mat in sel_matches:
 #plt.show (10000)
 
 
+# this part is still being improved
 # coordinate transformation stage
 # open master (georeferenced image)
 
