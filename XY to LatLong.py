@@ -1,26 +1,3 @@
-
-###############################################################################
-# Project:  Automatic Georeferencing of DWIATA Imagery
-# Purpose:  Script to automatically extract and match feautres between images, 
-#           read coordinate system and geotransformation matrix of the master image
-#           and report latitude/longitude coordinates of the keypoints, 
-#           update the geotransformation of slave images
-# Author:   Jerine A. Amado
-#           PHL-Microsat DPAD
-# References: 
-# [1] "Lowe, David G.","Distinctive Image Features from Scale-Invariant Keypoints",
-#     "International Journal of Computer Vision", 60(2) 91-110.
-# [2] "Bay, Herbert,  Ess, Andreasa, Tuytelaars, Tinne, and Van Gool, Luc"","Speede-Up Robust
-#      Features, Computer Vision and Image Understanding"", 110 (2008) 346–359
-# [3] "Garrard, Chris", "Manning Early Access Program Geoprocessing with Python 
-#      Copyright 2015 Manning Publications", (2015).
-# [4] ÖpenCV-Python Tutorials", http://opencv-python-tutroals.readthedocs.org
-# 
-#
-###############################################################################
-
-
-
 # matching features of two images using a combination of surf detector - descriptor and brute force matcher
 import cv2
 import scipy as sp
@@ -35,8 +12,8 @@ import time
 start_time = time.time()
 
 # keypoint extraction stage
-img1_path = 'H:\_uSAT\Qgis Exercise\Day 2 Exercise 1 Data (copy)\Landsat8_Butuan.jpg'
-img2_path = 'H:\_uSAT\Fully Georef (GCP)\Butuan.Slave.jpg'
+img1_path = 'C:\Users\EnviSAGE ResLab\Desktop\DPAD\Xy to Latlong\Landsat8_Butuan.jpg'
+img2_path = 'C:\Users\EnviSAGE ResLab\Desktop\DPAD\Xy to Latlong\Butuan.Slave.02.jpg'
 
 img1 = cv2.imread(img1_path, cv2.CV_LOAD_IMAGE_GRAYSCALE)
 img2 = cv2.imread(img2_path, cv2.CV_LOAD_IMAGE_GRAYSCALE)
@@ -113,10 +90,10 @@ for mat in sel_matches:
 
 	#annotate points for source image
 	N = len(sel_matches)
-	source = np.array(src_pts)
-	dest = np.array(dst_pts)
-	source.shape = (N,2)
-	dest.shape = (N,2)
+	s = np.array(src_pts) #pixel coordinates of master keypoints
+	d = np.array(dst_pts) #pixel cordinates of slave keypoints
+	s.shape = (N,2)
+	d.shape = (N,2)
 	
 	labels = ['{0}'.format(i) for i in range(N)]
 	'''
@@ -129,7 +106,7 @@ for mat in sel_matches:
 
 	#showing image using plt:
 	plt.subplots_adjust(bottom = 0)
-	for label, x, y in zip(labels, source[:, 0], source[:, 1]):
+	for label, x, y in zip(labels, s[:, 0], s[:, 1]):
 		plt.annotate( 
 			label, 
 			xy = (x, y), xytext = (-10, 10),
@@ -137,7 +114,7 @@ for mat in sel_matches:
 			bbox = dict(boxstyle = 'round4,pad=0.5', fc = 'cyan', alpha = 0.5),
 			arrowprops = dict(arrowstyle = '->', connectionstyle = 'arc3,rad=0'))
 	plt.subplots_adjust(bottom = 0)
-	for label, x, y in zip(labels, (dest[:, 0] +cols1), dest[:, 1]):
+	for label, x, y in zip(labels, (d[:, 0] +cols1), d[:, 1]):
 		plt.annotate(
 			label, 
 			xy = (x, y), xytext = (-10, 10),
@@ -145,65 +122,42 @@ for mat in sel_matches:
 			bbox = dict(boxstyle = 'round4,pad=0.5', fc = 'cyan', alpha = 0.5),
 			arrowprops = dict(arrowstyle = '->', connectionstyle = 'arc3,rad=0'))	
               #cv2.line(view, (int(x1),int(y1)), (int(x2)+cols1,int(y2)), (255, 0, 0), 1)
+	
 
-
-#plt.imshow(view)
-#plt.show (10000)
-
-
-# this part is still being improved
 # coordinate transformation stage
-# open master (georeferenced image)
+# open georeferenced image 
+ds = gdal.Open(img1_path)
 
-master_georef = gdal.Open (img1_path)
+#unravel GDAL affine transform parameters
+c, a , b, f,D ,e = ds.GetGeoTransform()
 
-# unravel GDAL affine transformation parameters
-# from the master image
-
-c1, a1 , b1, f1,d1 ,e1 = master_georef.GetGeoTransform()
-
-x_value = source[:,0]
-y_value = source[:,1]
+x_value = s[:,0]   # x-coordinate of s, master keypoints
+y_value = s[:,1]   # y-coordinate of s, master keypoints
 
 # Returns global coordintes of master image
-xp = a1*x_value + b1*y_value + a1*0.5 + b1*0.5 + c1
-yp = d1*x_value + e1*y_value + d1*0.5 + e1*0.5 + f1
+xp = a*x_value + b*y_value + a*0.5 + b *0.5 + c   # compute for global cooridnate (longitude)
+yp = D*x_value + e*y_value + D*0.5 + e *0.5 + f   # compute for global coordinate (latitude)
 
 # Reshape to (N,1)
 xp.shape =(N,1)
 yp.shape = (N,1)
 
 # Global coordinate of src_pts of master image
-final_coord = np.hstack((xp,yp))
-
-headers = ["Lat", "Lon"]
-headers2 = ["Master", "Slave"]
-headers3 = ["X", "Y"]
-headers4 =  ["RMSE per GCP"]
+final_coord = np.hstack((xp,yp))    # will give (long,lat) values
 
 
-# print global coordinates of the source points (src_pts)
-print tab(final_coord, headers,numalign="right")
+# Converting Slave image in jpg to tif
+img = Image.open('C:\Users\EnviSAGE ResLab\Desktop\DPAD\Xy to Latlong\Butuan.Slave.02.jpg')
+img.save('C:\Users\EnviSAGE ResLab\Desktop\DPAD\Xy to Latlong\Butuan.Slave.02.tiff')
 
-# Converting slave image in jpg to tif
-img = Image.open('H:\_uSAT\Fully Georef (GCP)\Butuan.Slave.jpg')  # input
-img.save('H:\Butuan.Slave.tiff')         # output
 
-# slave image is not yet georeferenced
-# its raw coordinates maybe checked using the GDAL affine coefficients
+# Transform slave image coordinates to world coordinates
+fn = r'C:\Users\EnviSAGE ResLab\Desktop\DPAD\Xy to Latlong\Butuan.Slave.02.tiff'    # open slave image
+ds2 = gdal.Open (fn, gdal.GA_Update)                                                # update slave image
+sr = osr.SpatialReference()
+sr.SetWellKnownGeogCS('EPSG') 
 
-img2_tif = r'H:\Butuan.Slave.tiff'
-slave_tif = gdal.Open (img2_tif)
-c2, a2 , b2, f2,d2 ,e2 = slave_tif.GetGeoTransform()
-
-print  c2, a2 , b2, f2,d2 ,e2 
-# will show 0.0 1.0 0.0 0.0 0.0 1.0, still in pixel coord (offset)
-
-# update the source raw tif global coordinates
-slave_update = gdal.Open (img2_tif, gdal.GA_Update)
-sr = osr.SpatialReference()     
-sr.SetWellKnownGeogCS('WGS84')   # setting the coordinate system (WSG84 with no projection)
-
+# Access global coordinates of src_pts and assign to dst_pts, # no. of GCPS must be 3 or above
 # add gcps using the  georeferenced master image - global coord paired to source points
 # needs automation of GCP values input
 gcps = [
@@ -218,53 +172,88 @@ gdal.GCP( 125.579 , 8.94783, 0,300.4359436 ,  142.44551086 ),
 gdal.GCP( 125.537 ,8.96804, 0, 181.77171326 ,  82.96598053 ),
 gdal.GCP( 125.54 , 8.95218, 0, 188.70367432 , 130.03863525),
 gdal.GCP( 125.546 , 8.96161, 0,206.5252533 ,  102.8332901 ),
-gdal.GCP( 125.5 , 8.94195, 0,69.46138763 , 158.69232178 ) ]
+gdal.GCP( 125.5 , 8.94195, 0,69.46138763 , 158.69232178 ) 
+]
 
 
-slave_update.SetGCPs(gcps, sr.ExportToWkt())
-#slave_update = None #close dataset to flush it to disk
+#ds2.SetGCPs(gcps, sr.ExportToWkt())
+#ds2= None
 
-print gcps
+#ds2.SetProjection(sr.ExportToWkt()) 
+#ds2.SetGeoTransform(gdal.GCPsToGeoTransform(gcps)) 
+#get global coordinates of slave image
 
-print slave_update
-# source_raw is already updated, and so are the geotransform coefficients
-# unravel GDAL affine transform parameters
-slave_georef = gdal.Open(r'H:\Butuan.Slave.tiff')
-c3, a3 , b3, f3,d3 ,e3 = slave_georef.GetGeoTransform()
+#unravel GDAL affine transform parameters
+img3_path = "C:\Users\EnviSAGE ResLab\Desktop\DPAD\Xy to Latlong\Butuan.Slave.02.tiff"
+ds3 = gdal.Open(img3_path)
+c,a , b,f,D ,e = ds3.GetGeoTransform()
 
-# must be updated!
-print c3, a3 , b3, f3,d3 ,e3
+#def pixel2coord(col,row):
+x2_value = d[:,0]
+y2_value = d[:,1]
 
-# from slave image
-x2_value = dest[:,0]
-y2_value = dest[:,1]
 
-# Returns global coordintes of slave image
-xpd = a1*x2_value  + b1*y2_value + a1*0.5  +b1 *0.5 + c1
-ypd = d1*x2_value + e1*y2_value + d1*0.5 +e1 *0.5 + f1
+xpd = a*x2_value  + b*y2_value + a*0.5  +b *0.5 + c
+ypd = D*x2_value + e*y2_value + D*0.5 +e *0.5 + f
 
-# Reshape to (N,1)
 xpd.shape =(N,1)
 ypd.shape = (N,1)
 
-# Global coordinate of dst_pts of master image
 final_coord_d = np.hstack((xpd,ypd))
 
-# solve for the root-mean square error
 rmse_per_gcp = np.sqrt(np.square(final_coord_d[:,0] - final_coord[:,0])) + np.square(final_coord_d[:,1] - final_coord[:,1])
 rpg = np.array (rmse_per_gcp, np.float32)
 rpg.shape = (N,1)
+#rmse_per_gcp_x.shape = (N,1)
+#rmse_per_gcp_y.shape = (N,1)
 
-print tab(final_coord_d, headers,numalign="right")
-print tab(rpg)
-
+#total_rmse_per_gcp = np.hstack((rmse_per_gcp_x, rmse_per_gcp_y))
 gcp = np.arange(0, N, 1)
 
-plt.plot(gcp,rmse_per_gcp, 'g--')
-plt.axis([0, 13, 0.0, 0.015])
+table = [[xp,yp]]
+headers = ["Lat", "Lon"]
+headers2 = ["Master", "Slave"]
+headers3 = ["X", "Y"]
+headers4 =  ["RMSE per GCP"]
+table2 = [gcp[:], xpd[:],ypd[:]]
+plt.plot(gcp,rmse_per_gcp, 'go')
+plt.axis([0, 13, 0.0, 0.05])
 plt.ylabel ("RMSE")
 plt.xlabel ("GCP No.")
 plt.title("RMSE per GCP (deg)")
 plt.grid(True)
 plt.plot(figsize=(5,5))
+
+#table = [[rmse_per_gcp_x]]
+#print tab(table)
+#print img1.shape
+#print img1.size
+#print img2.size
+#print "col:", col
+#print "row:", row
+#print "Lat:", xp
+#print "Lon:", yp
+
+#print "Master Global Coord:", final_coord
+#print "Slave Global Coord:", final_coord_d
+#print "Master KPs Coord", pixel_coord
+#print "Slave KPs Coord:", dst_pts
+#print "Image 1 Size:", img1.shape
+#print "Image 2 Size:", img2.shape
+#print "RMSE per GCP Northing:", rmse_per_gcp_x
+#print "RMSE per GCP Easting:", rmse_per_gcp_y
+#print "RMSE per GCP:", rmse_per_gcp
+#cv2.imshow("Matched", view)
+#plt.imshow(view) 
+#print tab(final_coord, headers,numalign="right")
+print tab(d)
+#print tab(final_coord_d, headers,numalign="right")
+#print tab(rpg)
+print c, a,b,f, D,e
+#print C, A,B,F, D2,E
+#plt.plot (gcp, rmse_per_gcp_x, "bs")
+#plt.plot (gcp, rmse_per_gcp_y, "ro")
+#cv2.imshow("Matched", view)
+#cv2.waitKey(1000)
+#plt.imshow(view)
 plt.show (10000)
