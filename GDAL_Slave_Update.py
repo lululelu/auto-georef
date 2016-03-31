@@ -1,12 +1,10 @@
-import cv2
-import scipy as sp
-import numpy as np
-import matplotlib.pyplot as plt
+# Use to Update .tif of slave
+#  Result is georeferenced slave image
+
 from osgeo import gdal
 from osgeo import osr
-from PIL import Image
-from tabulate import tabulate as tab
-import time
+
+
 
 
 fn = r'C:\Users\EnviSAGE ResLab\Desktop\DPAD\Xy to Latlong\Butuan.Slave.02.tiff'    # open slave image
