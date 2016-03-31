@@ -1,3 +1,4 @@
+#MAIN Code for Georeferencing
 # matching features of two images using a combination of surf detector - descriptor and brute force matcher
 import cv2
 import scipy as sp
@@ -40,7 +41,7 @@ thres_dist =(sum(dist) / len(dist)) * 0.63
 
 # keep only the reasonable matches
 sel_matches = [m for m in matches if m.distance < thres_dist]
-   #if enough matches are found, extract locations of matched keypoints
+# if enough matches are found, extract locations of matched keypoints
 src_pts = np.float32([ k1[m.queryIdx].pt for m in sel_matches ]).reshape(-1,1,2)
 dst_pts = np.float32([ k2[m.trainIdx].pt for m in sel_matches]).reshape(-1,1,2)
 
@@ -145,62 +146,58 @@ yp.shape = (N,1)
 # Global coordinate of src_pts of master image
 final_coord = np.hstack((xp,yp))    # will give (long,lat) values
 
-
+# Moved to translate_jpg_to_tiff.py
+'''
 # Converting Slave image in jpg to tif
 img = Image.open('C:\Users\EnviSAGE ResLab\Desktop\DPAD\Xy to Latlong\Butuan.Slave.02.jpg')
 img.save('C:\Users\EnviSAGE ResLab\Desktop\DPAD\Xy to Latlong\Butuan.Slave.02.tiff')
+'''
 
-
+# Moved to GDAL_Slave_Update.py
+'''
 # Transform slave image coordinates to world coordinates
 fn = r'C:\Users\EnviSAGE ResLab\Desktop\DPAD\Xy to Latlong\Butuan.Slave.02.tiff'    # open slave image
 ds2 = gdal.Open (fn, gdal.GA_Update)                                                # update slave image
 sr = osr.SpatialReference()
 sr.SetWellKnownGeogCS('EPSG') 
-
 # Access global coordinates of src_pts and assign to dst_pts, # no. of GCPS must be 3 or above
 # add gcps using the  georeferenced master image - global coord paired to source points
+# This is the same as attaching the GCPs to the raster image
 # needs automation of GCP values input
 gcps = [
-gdal.GCP(125.535 ,  8.95834, 0 ,175.19830322 , 112.04946899),
-gdal.GCP(125.589 ,8.96914, 0, 333.76828003,   80.90518951 ), 
-gdal.GCP(125.499 , 8.96441, 0,71.12488556  , 93.5379715  ), 
-gdal.GCP( 125.527 , 8.93583, 0, 149.82575989 , 176.47032166 ), 
-gdal.GCP( 125.534 , 8.96407, 0,171.52664185 ,  95.27961731 ),
-gdal.GCP( 125.501 , 8.94016, 0,73.97042847 , 163.30134583 ),
-gdal.GCP( 125.538 , 8.9185, 0,180.14434814 , 228.19236755 ),
-gdal.GCP( 125.579 , 8.94783, 0,300.4359436 ,  142.44551086 ),
-gdal.GCP( 125.537 ,8.96804, 0, 181.77171326 ,  82.96598053 ),
-gdal.GCP( 125.54 , 8.95218, 0, 188.70367432 , 130.03863525),
-gdal.GCP( 125.546 , 8.96161, 0,206.5252533 ,  102.8332901 ),
-gdal.GCP( 125.5 , 8.94195, 0,69.46138763 , 158.69232178 ) 
+gdal.GCP(125.53526306, 8.95834255, 0 ,146.19915771, 116.02167511),
+gdal.GCP(125.58892822, 8.96913815, 0, 304.72198486, 84.87580109), 
+gdal.GCP(125.49948883, 8.96440601, 0,42.23839188, 97.51493835 ), 
+gdal.GCP( 125.52687073, 8.93583393, 0, 120.81288147, 180.48278809 ), 
+gdal.GCP( 125.53765869, 8.91849518, 0,151.1084137, 232.2142334  ),
+gdal.GCP( 125.53739166, 8.96804428, 0,152.79367065, 86.9480896),
+gdal.GCP( 125.54602814, 8.96160507, 0, 177.540802, 106.82711029),
+gdal.GCP(  125.49951935, 8.94194889, 0, 40.47888184, 162.66494751 ),
+gdal.GCP( 125.54803467, 8.93322849, 0, 183.19909668,190.85552979)
 ]
-
-
-#ds2.SetGCPs(gcps, sr.ExportToWkt())
+ds2.SetGCPs(gcps, sr.ExportToWkt())
 #ds2= None
+ds2.SetProjection(sr.ExportToWkt()) 
+ds2.SetGeoTransform(gdal.GCPsToGeoTransform(gcps)) 
+'''
 
-#ds2.SetProjection(sr.ExportToWkt()) 
-#ds2.SetGeoTransform(gdal.GCPsToGeoTransform(gcps)) 
 #get global coordinates of slave image
-
 #unravel GDAL affine transform parameters
 img3_path = "C:\Users\EnviSAGE ResLab\Desktop\DPAD\Xy to Latlong\Butuan.Slave.02.tiff"
-ds3 = gdal.Open(img3_path)
-c,a , b,f,D ,e = ds3.GetGeoTransform()
+ds2 = gdal.Open(img3_path)
+C,A , B,F,D2 ,E = ds2.GetGeoTransform()
 
 #def pixel2coord(col,row):
 x2_value = d[:,0]
 y2_value = d[:,1]
 
-
-xpd = a*x2_value  + b*y2_value + a*0.5  +b *0.5 + c
-ypd = D*x2_value + e*y2_value + D*0.5 +e *0.5 + f
+xpd = A*x2_value  + B*y2_value + A*0.5  +B *0.5 +C
+ypd = D2*x2_value + E*y2_value + D2*0.5 +E *0.5 + F
 
 xpd.shape =(N,1)
 ypd.shape = (N,1)
 
 final_coord_d = np.hstack((xpd,ypd))
-
 rmse_per_gcp = np.sqrt(np.square(final_coord_d[:,0] - final_coord[:,0])) + np.square(final_coord_d[:,1] - final_coord[:,1])
 rpg = np.array (rmse_per_gcp, np.float32)
 rpg.shape = (N,1)
@@ -234,8 +231,8 @@ plt.plot(figsize=(5,5))
 #print "Lat:", xp
 #print "Lon:", yp
 
-#print "Master Global Coord:", final_coord
-#print "Slave Global Coord:", final_coord_d
+print "Master Global Coord:", final_coord
+print "Slave Global Coord:", final_coord_d
 #print "Master KPs Coord", pixel_coord
 #print "Slave KPs Coord:", dst_pts
 #print "Image 1 Size:", img1.shape
@@ -249,11 +246,17 @@ plt.plot(figsize=(5,5))
 print tab(d)
 #print tab(final_coord_d, headers,numalign="right")
 #print tab(rpg)
-print c, a,b,f, D,e
+print C, A,B,F, D2,E
 #print C, A,B,F, D2,E
 #plt.plot (gcp, rmse_per_gcp_x, "bs")
 #plt.plot (gcp, rmse_per_gcp_y, "ro")
 #cv2.imshow("Matched", view)
 #cv2.waitKey(1000)
 #plt.imshow(view)
-plt.show (10000)
+plt.show (10000) 
+
+#print s
+#print d
+print final_coord
+print final_coord_d
+print rmse_per_gcp
